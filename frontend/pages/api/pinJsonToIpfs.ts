@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 // define handler function
 export default async function handler(req: NextRequest, res: NextResponse) {
-  console.log("req.body", req.body);
   // parse metadata from request body
   const metadata = req.body;
 
@@ -14,19 +14,19 @@ export default async function handler(req: NextRequest, res: NextResponse) {
 
   try {
     // pin metadata to IPFS using Pinata API
-    const { IpfsHash: cid } = await fetch(
+    const {
+      data: { IpfsHash: cid },
+    } = await axios.post(
       "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+      metadata,
       {
-        method: "POST",
-        body: JSON.stringify(metadata),
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_PINATA_JWT}`,
+          pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
+          pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_API_SECRET,
         },
       }
-    ).then((res) => {
-      return res.json();
-    });
+    );
 
     // send metadata URL in response
     if (cid) {

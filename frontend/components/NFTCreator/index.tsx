@@ -93,7 +93,6 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
     try {
       const NFTContract = new Contract(contractAddress, abi, signer);
       const metadataURL = await generateMetadata();
-      console.log("metadataURL", metadataURL);
 
       const mintTx = await NFTContract.mint(address, tokenId, amount, []);
       await NFTContract.setURI(metadataURL);

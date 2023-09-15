@@ -32,7 +32,6 @@ export default async function handler(
 
   // Check if an image was uploaded
   const image = data.files.image[0];
-  console.log("!!image", image.filepath);
 
   if (image) {
     try {
@@ -52,7 +51,7 @@ export default async function handler(
       const options = JSON.stringify({
         cidVersion: 0,
       });
-      console.log("options", options);
+
       // Append the options object to the form data object
       formData.append("pinataOptions", options);
 
@@ -77,7 +76,7 @@ export default async function handler(
         .status(200)
         .send({ fileURL: `https://gateway.pinata.cloud/ipfs/${IpfsHash}` });
     } catch (e) {
-      console.log(e.message);
+      alert(e.message);
       res.status(500).send({
         message: "something went wrong, check the log in your terminal",
       });

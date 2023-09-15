@@ -34,9 +34,7 @@ const NftMinter: React.FC<NftMinterProps> = ({
     const nftContract = new Contract(contractAddress, abi, signer);
     try {
       setIsMinting(true);
-      console.log("address", address);
-      console.log("address", tokenId);
-      console.log("address", amount);
+
       const mintTx = await nftContract.mint(address, +tokenId, +amount, []);
       await nftContract.setURI(tokenUri);
       setTxHash(mintTx?.hash);
@@ -44,7 +42,7 @@ const NftMinter: React.FC<NftMinterProps> = ({
       setIsMinting(false);
       setTxHash("");
     } catch (e) {
-      console.log(e);
+      alert(e.message);
       setIsMinting(false);
     }
   };
