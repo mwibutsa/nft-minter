@@ -1,0 +1,36 @@
+{
+  "name": "multi-tokens",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "npx hardhat compile",
+    "deploy-testnet": "npx hardhat run ./scripts/NFTCreator_deploy.js --network ETH_GOERLI",
+    "deploy-sep": "npx hardhat run ./scripts/MultiToken_deploy.js --network ETH_SEPOLIA",
+    "deploy": "npx hardhat run ./scripts/NFTCreator_deploy.js --network ETH_MAINNET",
+    "node": "npx hardhat node",
+    "deploy-local": "npx hardhat run ./scripts/MultiToken_deploy.js --network localhost"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.9",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-etherscan": "^3.1.7",
+    "@openzeppelin/contracts": "^4.7.3",
+    "@typechain/ethers-v5": "^11.1.1",
+    "@typechain/hardhat": "^9.0.0",
+    "@types/chai": "^4.3.6",
+    "@types/mocha": "^10.0.1",
+    "chai": "^4.3.8",
+    "dotenv": "^16.0.2",
+    "hardhat-gas-reporter": "^1.0.9",
+    "solidity-coverage": "^0.8.4",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.3.1",
+    "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^1.0.2",
+    "hardhat": "^2.10.1"
+  }
+}
