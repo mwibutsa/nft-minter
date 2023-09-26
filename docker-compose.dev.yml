@@ -8,8 +8,8 @@ services:
         context: .
         dockerfile: Dockerfile.dev
       volumes:
-        - .:/app/:rw
-        - /app/node_modules/
-        - /app/.next
+        - ./frontend:/app/:rw
+        - ./frontend/node_modules:/app/node_modules/
+        - ./frontend/.next:/app/.next
       ports:
         - 3000:3000
