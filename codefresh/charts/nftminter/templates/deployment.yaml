@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      containers:
+      - name: react-app
+        image: {{ .Values.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        #  terminationMessagePath: "/tmp/my-log"
+        #  terminationMessagePolicy: "FallbackToLogsOnError"
+          # resources:
+          #   limits:
+          #     cpu: {{ .Values.cpuLimits }}
+          #     memory: {{ .Values.memoryLimits }}
+          #   requests:
+          #     cpu: {{ .Values.cpuRequests }}
+          #     memory: {{ .Values.memoryRequests }}
+          # ports:
+          #   - containerPort: {{ .Values.containerPort }}
+          #     protocol: {{ .Values.containerProtocol }}
+          # readinessProbe:
+          #   failureThreshold: 3
+          #   initialDelaySeconds: 45
+          #   periodSeconds: 15
+          #   successThreshold: 1
+          #   tcpSocket:
+          #     port: {{ .Values.redinessProbePort }}
+          #   timeoutSeconds: 3
+            

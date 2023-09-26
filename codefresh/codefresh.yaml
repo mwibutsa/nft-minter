@@ -1,0 +1,456 @@
+version: "1.0"
+fail_fast: false
+build_version: "v2"
+
+stages:
+  - clone
+  - init
+  - image_build
+  - helm_chart
+  - printenv
+  - helm_push
+  - helm_deploy
+
+steps:
+  main_clone:
+    type: git-clone
+    description: Cloning main repository...
+    repo: ${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}
+    revision: ${{CF_BRANCH}}
+    stage: clone
+
+  environment_setup:
+    image: "alpine"
+    title: Environment setup
+    scale:
+      development_environment_setup:
+        when:
+          condition:
+            all:
+              isBuildOrDevDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'dev'"
+        title: dev-env
+        commands:
+          - cf_export BRANCH_TAG_NORMALIZED="$(echo ${{CF_BRANCH_TAG_NORMALIZED_LOWER_CASE}} | tr  '.'  '-')"
+          #- cf_export APP_NAMESPACE=${{APP_NAME}}-"$(echo ${{CF_BRANCH_TAG_NORMALIZED_LOWER_CASE}} | tr  '.'  '-')"
+          - cf_export APP_NAMESPACE=${{APP_NAME}}-dev
+          - printenv
+
+      staging_environment_setup:
+        when:
+          condition:
+            all:
+              isStageDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'stage'"
+        title: stage-env
+        commands:
+          - cf_export BRANCH_TAG_NORMALIZED="$(echo ${{CF_BRANCH_TAG_NORMALIZED_LOWER_CASE}} | tr  '.'  '-')"
+          #- cf_export APP_NAMESPACE=${{APP_NAME}}-"$(echo ${{CF_BRANCH_TAG_NORMALIZED_LOWER_CASE}} | tr  '.'  '-')"
+          - cf_export APP_NAMESPACE=${{APP_NAME}}-stage
+          - printenv
+
+      production_environment_setup:
+        when:
+          condition:
+            all:
+              isProdDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'prod'"
+        title: prod-env
+        commands:
+          - cf_export BRANCH_TAG_NORMALIZED="$(echo ${{CF_BRANCH_TAG_NORMALIZED_LOWER_CASE}} | tr  '.'  '-')"
+          #- cf_export APP_NAMESPACE=${{APP_NAME}}-"$(echo ${{CF_BRANCH_TAG_NORMALIZED_LOWER_CASE}} | tr  '.'  '-')"
+          - cf_export APP_NAMESPACE=${{APP_NAME}}-prod
+          - printenv
+
+      feature_environment_setup:
+        when:
+          condition:
+            all:
+              isDevDeployment: "'${{DEPLOY_ENVIRONMENT}}' != 'dev'"
+              isStageDeployment: "'${{DEPLOY_ENVIRONMENT}}' != 'stage'"
+              isProdDeployment: "'${{DEPLOY_ENVIRONMENT}}' != 'prod'"
+        title: feature-env
+        commands:
+          - cf_export BRANCH_TAG_NORMALIZED="$(echo ${{CF_BRANCH_TAG_NORMALIZED_LOWER_CASE}} | tr  '.'  '-')"
+          #- cf_export APP_NAMESPACE=${{APP_NAME}}-"$(echo ${{CF_BRANCH_TAG_NORMALIZED_LOWER_CASE}} | tr  '.'  '-')"
+          - cf_export APP_NAMESPACE=${{APP_NAME}}-${{CF_BRANCH_TAG_NORMALIZED_LOWER_CASE}}
+          - cf_export DEPLOY_ENVIRONMENT="feature"
+          - printenv
+    stage: init
+
+  namespace_setup:
+    image: "alpine"
+    title: Create Namespace
+    scale:
+      create_namespace:
+        image: codefresh/kube-helm:master
+        title: Create Namespace in cluster
+        commands:
+          - printenv
+          - kubectl config use-context ${{KUBE_CONTEXT}}
+          - kubectl create namespace ${{APP_NAMESPACE}} || true
+    stage: init
+
+  # Docker image steps.
+  docker:
+    type: build
+    title: Create Docker Image
+    #when:
+      # steps:
+      #   - name: frontend_test
+      #     on:
+      #       - success
+      #condition:
+        #any:
+          #isDevBuild: "'${{DEPLOY_ENVIRONMENT}}' == 'dev'"
+          #isStageBuild: "'${{DEPLOY_ENVIRONMENT}}' == 'stage'"
+          ## should skip build in prod we are deploying previously tested container from stage deploy
+          #isNotProductionBuild: "'${{DEPLOY_ENVIRONMENT}}' != 'prod'"
+    scale:
+      docker_build:
+        title: Build Image
+        dockerfile: ./Dockerfile
+        image_name: "koingives/${{APP_NAME}}"
+        tag: ${{BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}
+        build_arguments:
+          # LOCAL
+
+          #GLOBAL - to be filled in
+          - NEXT_PUBLIC_ALCHEMY_API_KEY=${{NEXT_PUBLIC_ALCHEMY_API_KEY}}
+          - NEXT_PUBLIC_DEFAULT_CHAIN=${{NEXT_PUBLIC_DEFAULT_CHAIN}}
+          - NEXT_PUBLIC_CONTRACT_ADDRESS=${{NEXT_PUBLIC_CONTRACT_ADDRESS}}
+          - NEXT_PUBLIC_PRIVATE_KEY=${{NEXT_PUBLIC_PRIVATE_KEY}}
+          - NEXT_PUBLIC_PINATA_API_KEY=${{NEXT_PUBLIC_PINATA_API_KEY}}
+          - NEXT_PUBLIC_PINATA_API_SECRET=${{NEXT_PUBLIC_PINATA_API_SECRET}}
+
+    stage: image_build
+
+  notify_build_failure:
+    type: slack-message-sender
+    title: "Image Build Failure"
+    when:
+      steps:
+        any:
+          - name: docker_build
+            on:
+              - failure
+    arguments:
+      WEBHOOK_URL: ${{SLACK_WEBHOOK_URL}}
+      MESSAGE: "🔴 Docker Build failed.\nBranch: ${{CF_BRANCH}}\nDetails: ${{CF_BUILD_URL}}\nChanges: ${{CF_COMMIT_URL}}"
+    stage: image_build
+
+  # notify_build_success:
+  #   type: slack-message-sender
+  #   title: "Image Build Success"
+  #   when:
+  #     steps:
+  #       all:
+  #         - name: docker_build
+  #           on:
+  #             - success
+  #   arguments:
+  #     WEBHOOK_URL: ${{SLACK_WEBHOOK_URL}}
+  #     #MESSAGE: "\n🔵 Build successful.\nBranch: ${{CF_BRANCH}}\nDetails: ${{CF_BUILD_URL}}\nChanges: ${{CF_COMMIT_URL}}"
+  #     MESSAGE: "\n🔵 Chart Push successful.\nBranch: ${{CF_BRANCH}}\nDetails: ${{CF_BUILD_URL}}\nChanges: ${{CF_COMMIT_URL}}"
+  #   stage: image_build
+
+  helm_setup:
+    image: "alpine"
+    title: Prep Chart Deployment
+    scale:
+      dev_setup:
+        title: "Dev Chart"
+        when:
+          condition:
+            all:
+              isBuildOrDevDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'dev'"
+          steps:
+            all:
+              - name: docker_build
+                on:
+                  - success
+        commands:
+          - cf_export CHART_VERSION=0.0.0-${{BRANCH_TAG_NORMALIZED}}
+          - cf_export CHART_REF=codefresh/charts/${{APP_NAME}}
+          - cf_export RELEASE_NAME=${{APP_NAME}}-dev
+          - cf_export INGRESS_HOSTS_HOSTNAME="${{APP_NAMESPACE}}.${{CLUSTER_NAME}}"
+
+      stage_setup:
+        title: "Stage Chart"
+        when:
+          condition:
+            all:
+              isStageDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'stage'"
+          steps:
+            all:
+              - name: docker_build
+                on:
+                  - success
+        commands:
+          - cf_export CHART_VERSION=0.0.0-${{BRANCH_TAG_NORMALIZED}}
+          - cf_export CHART_REF=codefresh/charts/${{APP_NAME}}
+          - cf_export RELEASE_NAME=${{APP_NAME}}-stage
+          - cf_export INGRESS_HOSTS_HOSTNAME="${{APP_NAMESPACE}}.${{CLUSTER_NAME}}"
+
+      production_setup:
+        title: "Prod Chart"
+        when:
+          condition:
+            all:
+              isProdDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'prod'"
+        commands:
+          - cf_export CHART_VERSION=0.0.0-${{BRANCH_TAG_NORMALIZED}}
+          - cf_export CHART_REF=codefresh/charts/${{APP_NAME}}
+          - cf_export RELEASE_NAME=${{APP_NAME}}-prod
+          - cf_export INGRESS_HOSTS_HOSTNAME="${{APP_NAMESPACE}}.${{CLUSTER_NAME}}"
+          #- cf_export INGRESS_HOSTS_HOSTNAME="nftminter.koinect.com"
+          #- cf_export INGRESS_HOSTS_HOSTNAME2=${{INGRESS_HOSTS_HOSTNAME2}}
+
+      feature_setup:
+        title: "Feature Chart"
+        when:
+          condition:
+            all:
+              isFeatureDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'feature'"
+          steps:
+            all:
+              - name: docker_build
+                on:
+                  - success
+        commands:
+          - cf_export CHART_VERSION=0.0.0-${{BRANCH_TAG_NORMALIZED}}
+          - cf_export CHART_REF=codefresh/charts/${{APP_NAME}}
+          - cf_export RELEASE_NAME=${{APP_NAME}}-${{BRANCH_TAG_NORMALIZED}}
+          - cf_export INGRESS_HOSTS_HOSTNAME="${{APP_NAMESPACE}}.${{CLUSTER_NAME}}"
+
+    stage: helm_chart
+
+  printenv:
+    image: "alpine"
+    title: Create Namespace
+    commands:
+      - printenv
+      - echo ${{CHART_REF}}
+    stage: printenv
+
+  # # # # # helm_push:
+  # # # # #   title: Push Helm Chart to Chart Repo
+  # # # # #   type: helm
+  # # # # #   working_directory: ${{main_clone}}
+  # # # # #   arguments:
+  # # # # #     helm_version: 3.2.4
+  # # # # #     action: push
+  # # # # #     kube_context: ${{KUBE_CONTEXT}}
+  # # # # #     chart_name: ${{CHART_REF}}
+  # # # # #     chart_version: ${{CHART_VERSION}}
+  # # # # #     release_name: ${{RELEASE_NAME}}
+  # # # # #     namespace: ${{APP_NAMESPACE}}
+  # # # # #     wait: true
+  # # # # #     timeout: "120s"
+  # # # # #   # when:
+  # # # # #   #   steps:
+  # # # # #   #     any:
+  # # # # #   #       - name: production_setup
+  # # # # #   #         on:
+  # # # # #   #           - success
+  # # # # #   #       - name: stage_setup
+  # # # # #   #         on:
+  # # # # #   #           - success
+  # # # # #   #       - name: dev_setup
+  # # # # #   #         on:
+  # # # # #   #           - success
+  # # # # #   #       - name: feature_setup
+  # # # # #   #         on:
+  # # # # #   #           - success
+  # # # # #   #   condition:
+  # # # # #   #     any:
+  # # # # #   #       isDevDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'dev'"
+  # # # # #   #       isStageDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'stage'"
+  # # # # #   #       isProdDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'prod'"
+  # # # # #   stage: helm_push
+
+  # # # notify_push_failure:
+  # # #   type: slack-message-sender
+  # # #   title: "Chart Push Failure"
+  # # #   when:
+  # # #     steps:
+  # # #       any:
+  # # #         - name: helm_push
+  # # #           on:
+  # # #             - failure
+  # # #   arguments:
+  # # #     WEBHOOK_URL: ${{SLACK_WEBHOOK_URL}}
+  # # #     MESSAGE: "🔴 Chart Push failed.\nBranch: ${{CF_BRANCH}}\nDetails: ${{CF_BUILD_URL}}\nChanges: ${{CF_COMMIT_URL}}"
+  # # #   stage: helm_push
+
+  # notify_push_success:
+  #   type: slack-message-sender
+  #   title: "Chart Push Success"
+  #   when:
+  #     steps:
+  #       all:
+  #         - name: helm_push
+  #           on:
+  #             - success
+  #   arguments:
+  #     WEBHOOK_URL: ${{SLACK_WEBHOOK_URL}}
+  #     MESSAGE: "\n🔵 Chart Push successful.\nBranch: ${{CF_BRANCH}}\nDetails: ${{CF_BUILD_URL}}\nChanges: ${{CF_COMMIT_URL}}"
+  #   stage: helm_push
+
+  ## DEPLOYMENT
+  helm_deploy:
+    scale:
+      dev_deploy:
+        title: "Deploy Dev Chart"
+        when:
+          condition:
+            all:
+              isBuildOrDevDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'dev'"
+        type: helm
+        working_directory: ${{main_clone}}
+        arguments:
+          helm_version: 3.2.4
+          action: install
+          kube_context: ${{KUBE_CONTEXT}}
+          chart_name: ${{CHART_REF}}
+          chart_version: ${{CHART_VERSION}}
+          release_name: ${{RELEASE_NAME}}
+          namespace: ${{APP_NAMESPACE}}
+          wait: true
+          timeout: "120s"
+          custom_values:
+            - containerPort=${{CONTAINER_PORT}}
+            - servicePort=${{SERVICE_PORT}}
+            - namespace=${{APP_NAMESPACE}}
+            - branchNormalized=${{APP_NAMESPACE}}
+            - commit=${{CF_SHORT_REVISION}}
+            - clusterName=${{CLUSTER_NAME}}
+            - image=${{IMAGE_REPO_URL}}:${{BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}
+            - ingress_hosts_hostname=${{INGRESS_HOSTS_HOSTNAME}}
+            - ingress_tls_secretName=${{APP_NAME}}-${{DEPLOY_ENVIRONMENT}}-tls-secret
+            - ingress_useCertManager=${{USE_CERT_MANAGER}}
+            - deployEnv=${{DEPLOY_ENVIRONMENT}}
+            - replicaCount=1
+            #- ingressClassName=nginx-internal
+            #- ingressClassName=nginx
+
+      stage_deploy:
+        title: "Deploy STAGE Chart"
+        when:
+          condition:
+            all:
+              isProdDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'stage'"
+        type: helm
+        working_directory: ${{main_clone}}
+        arguments:
+          helm_version: 3.2.4
+          action: install
+          kube_context: ${{KUBE_CONTEXT}}
+          chart_name: ${{CHART_REF}}
+          chart_version: ${{CHART_VERSION}}
+          release_name: ${{RELEASE_NAME}}
+          namespace: ${{APP_NAMESPACE}}
+          wait: true
+          timeout: "120s"
+          custom_values:
+            - containerPort=${{CONTAINER_PORT}}
+            - servicePort=${{SERVICE_PORT}}
+            - namespace=${{APP_NAMESPACE}}
+            - branchNormalized=${{APP_NAMESPACE}}
+            - commit=${{CF_SHORT_REVISION}}
+            - clusterName=${{CLUSTER_NAME}}
+            - image=${{IMAGE_REPO_URL}}:${{BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}
+            - ingress_hosts_hostname=${{INGRESS_HOSTS_HOSTNAME}}
+            - ingress_tls_secretName=${{APP_NAME}}-${{DEPLOY_ENVIRONMENT}}-tls-secret
+            - ingress_useCertManager=${{USE_CERT_MANAGER}}
+            - deploy_env=${{DEPLOY_ENVIRONMENT}}
+            - replicaCount=1
+            #- ingressClassName=nginx-internal
+            #- ingressClassName=nginx
+
+      prod_deploy:
+        title: "Deploy PROD Chart"
+        when:
+          condition:
+            all:
+              isProdDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'prod'"
+        type: helm
+        working_directory: ${{main_clone}}
+        arguments:
+          helm_version: 3.2.4
+          action: install
+          kube_context: ${{KUBE_CONTEXT}}
+          chart_name: ${{CHART_REF}}
+          chart_version: ${{CHART_VERSION}}
+          release_name: ${{RELEASE_NAME}}
+          namespace: ${{APP_NAMESPACE}}
+          wait: true
+          timeout: "120s"
+          custom_values:
+            - containerPort=${{CONTAINER_PORT}}
+            - servicePort=${{SERVICE_PORT}}
+            - namespace=${{APP_NAMESPACE}}
+            - branchNormalized=${{APP_NAMESPACE}}
+            - commit=${{CF_SHORT_REVISION}}
+            - clusterName=${{CLUSTER_NAME}}
+            - image=${{IMAGE_REPO_URL}}:${{BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}
+            - ingress_hosts_hostname=${{INGRESS_HOSTS_HOSTNAME}}
+            - ingress_tls_secretName=${{APP_NAME}}-${{DEPLOY_ENVIRONMENT}}-tls-secret
+            - ingress_useCertManager=${{USE_CERT_MANAGER}}
+            - deploy_env=${{DEPLOY_ENVIRONMENT}}
+            - replicaCount=2
+            #- ingressClassName=nginx
+
+      feature_deploy:
+        title: "Deploy Feature Chart"
+        when:
+          condition:
+            all:
+              isFeatureDeployment: "'${{DEPLOY_ENVIRONMENT}}' == 'feature'"
+        type: helm
+        working_directory: ${{main_clone}}
+        arguments:
+          helm_version: 3.2.4
+          action: install
+          kube_context: ${{KUBE_CONTEXT}}
+          chart_name: ${{CHART_REF}}
+          chart_version: ${{CHART_VERSION}}
+          release_name: ${{RELEASE_NAME}}
+          namespace: ${{APP_NAMESPACE}}
+          wait: true
+          timeout: "120s"
+          custom_values:
+            - containerPort=${{CONTAINER_PORT}}
+            - servicePort=${{SERVICE_PORT}}
+            - namespace=${{APP_NAMESPACE}}
+            - branchNormalized=${{APP_NAMESPACE}}
+            - commit=${{CF_SHORT_REVISION}}
+            - clusterName=${{CLUSTER_NAME}}
+            - image=${{IMAGE_REPO_URL}}:${{BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}
+            - ingress_hosts_hostname=${{INGRESS_HOSTS_HOSTNAME}}
+            - ingress_tls_secretName=${{APP_NAME}}-${{DEPLOY_ENVIRONMENT}}-tls-secret
+            - ingress_useCertManager=${{USE_CERT_MANAGER}}
+            - deployEnv=${{DEPLOY_ENVIRONMENT}}
+
+    stage: helm_deploy
+
+  notify_deploy_success:
+    type: slack-message-sender
+    title: "Deploy Success"
+    when:
+      condition:
+        all:
+          isASuccessfulDeploy: steps.helm_deploy.result == 'success'
+    arguments:
+      WEBHOOK_URL: ${{SLACK_WEBHOOK_URL}}
+      MESSAGE: "\n🔵 ${{APP_NAME}} Deploy successful:\nHostname: ${{INGRESS_HOSTS_HOSTNAME}}\nBranch: ${{CF_BRANCH}}\nChanges: ${{CF_COMMIT_URL}}\nDetails: ${{CF_BUILD_URL}}"
+    stage: helm_deploy
+
+  notify_deploy_failure:
+    type: slack-message-sender
+    title: "Deploy Failure"
+    when:
+      condition:
+        all:
+          isAFailedlDeploy: steps.helm_deploy.result == 'failure'
+    arguments:
+      WEBHOOK_URL: ${{SLACK_WEBHOOK_URL}}
+      MESSAGE: "\n🔴 ${{APP_NAME}} Deploy failed.\nBranch: ${{CF_BRANCH}}\nChanges: ${{CF_COMMIT_URL}}\nDetails: ${{CF_BUILD_URL}}"
+    stage: helm_deploy

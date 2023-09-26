@@ -1,0 +1,15 @@
+version: '3.7'
+services: 
+    app:
+      platform: 'linux/amd64'
+      env_file:
+        - frontend/.env
+      build:
+        context: .
+        dockerfile: Dockerfile.dev
+      volumes:
+        - .:/app/:rw
+        - /app/node_modules/
+        - /app/.next
+      ports:
+        - 3000:3000

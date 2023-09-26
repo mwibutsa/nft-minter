@@ -1,0 +1,86 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $.Chart.Name }}.{{ $.Values.branchNormalized }}
+  
+  {{- if eq (.Values.deployEnv | toString) "dev" }}
+  annotations:
+    cert-manager.io/acme-challenge-type: dns01
+    cert-manager.io/acme-dns01-provider: route53
+    cert-manager.io/cluster-issuer: rt53-issuer
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ssl-redirect: "true"
+    kubernetes.io/tls-acme: "true"
+    meta.helm.sh/release-name: {{ $.Values.branchNormalized }}
+    meta.helm.sh/release-namespace: {{ $.Values.namespace }}
+    nginx.kubernetes.io/ingress.allow-http: "false"
+    nginx.kubernetes.io/ingress.force-ssl-redirect: "true"
+  {{- end }}
+  {{- if eq (.Values.deployEnv | toString) "stage" }}
+  annotations:
+    cert-manager.io/acme-challenge-type: dns01
+    cert-manager.io/acme-dns01-provider: route53
+    cert-manager.io/cluster-issuer: rt53-issuer
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ssl-redirect: "true"
+    kubernetes.io/tls-acme: "true"
+    meta.helm.sh/release-name: {{ $.Values.branchNormalized }}
+    meta.helm.sh/release-namespace: {{ $.Values.namespace }}
+    nginx.kubernetes.io/ingress.allow-http: "false"
+    nginx.kubernetes.io/ingress.force-ssl-redirect: "true"
+  {{- end }}
+  {{- if eq (.Values.deployEnv | toString) "prod" }}
+  annotations:
+#    cert-manager.io/acme-challenge-type: dns01
+#    cert-manager.io/cluster-issuer: cloudflare-issuer
+#    kubernetes.io/ingress.class: nginx
+#    kubernetes.io/ssl-redirect: "true"
+#    kubernetes.io/tls-acme: "true"
+#    meta.helm.sh/release-name: {{ $.Values.branchNormalized }}
+#    meta.helm.sh/release-namespace: {{ $.Values.namespace }}
+#    nginx.kubernetes.io/ingress.allow-http: "false"
+#    nginx.kubernetes.io/ingress.force-ssl-redirect: "true"
+    cert-manager.io/acme-challenge-type: dns01
+    cert-manager.io/acme-dns01-provider: route53
+    cert-manager.io/cluster-issuer: rt53-issuer
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ssl-redirect: "true"
+    kubernetes.io/tls-acme: "true"
+    meta.helm.sh/release-name: {{ $.Values.branchNormalized }}
+    meta.helm.sh/release-namespace: {{ $.Values.namespace }}
+    nginx.kubernetes.io/ingress.allow-http: "false"
+    nginx.kubernetes.io/ingress.force-ssl-redirect: "true"
+  {{- end }}
+   {{- if eq (.Values.deployEnv | toString) "feature" }}
+  annotations:
+    cert-manager.io/acme-challenge-type: dns01
+    cert-manager.io/acme-dns01-provider: route53
+    cert-manager.io/cluster-issuer: rt53-issuer
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ssl-redirect: "true"
+    kubernetes.io/tls-acme: "true"
+    meta.helm.sh/release-name: {{ $.Values.branchNormalized }}
+    meta.helm.sh/release-namespace: {{ $.Values.namespace }}
+    nginx.kubernetes.io/ingress.allow-http: "false"
+    nginx.kubernetes.io/ingress.force-ssl-redirect: "true"
+  {{- end }}
+spec:
+  #ingressClassName: nginx
+  {{- if .Values.ingress.useCertManager }}
+  # TLS entry required for each hostname that we want SSL added.
+  tls:
+  - hosts:
+    - {{ .Values.ingress.hosts.hostname }}
+    secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.ingress.hosts.hostname}}
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: {{ $.Chart.Name }}
+            port:
+              number: {{ .Values.ingress.hosts.servicePort }}
