@@ -1,5 +1,3 @@
-// Before using this API endpoint, make sure to run npm install FormData formidable or yarn install FormData formidable.
-
 import formidable from "formidable";
 import fs from "fs";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -10,6 +8,14 @@ export const config = {
     bodyParser: false,
   },
 };
+interface IFormData {
+  files: {
+    image?: Array<{
+      filepath: string;
+    }>;
+  };
+  fields: Record<string, any>;
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -22,7 +28,7 @@ export default async function handler(
   }
   const FormData = require("form-data");
   // Parse the incoming form data
-  const data = await new Promise((resolve, reject) => {
+  const data = await new Promise<IFormData>((resolve, reject) => {
     const form = formidable({});
     form.parse(req, (err, fields, files) => {
       if (err) reject({ err });
@@ -31,7 +37,7 @@ export default async function handler(
   });
 
   // Check if an image was uploaded
-  const image = data.files.image[0];
+  const image = data.files?.image?.[0];
 
   if (image) {
     try {
@@ -76,7 +82,7 @@ export default async function handler(
         .status(200)
         .send({ fileURL: `https://gateway.pinata.cloud/ipfs/${IpfsHash}` });
     } catch (e) {
-      alert(e.message);
+      alert((e as Error).message);
       res.status(500).send({
         message: "something went wrong, check the log in your terminal",
       });
