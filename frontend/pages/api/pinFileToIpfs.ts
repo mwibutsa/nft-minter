@@ -1,7 +1,3 @@
-interface IResponseData {
-  message?: string;
-  metadataURL?: string;
-}
 import formidable from "formidable";
 import fs from "fs";
 import { NextApiRequest, NextApiResponse } from "next";

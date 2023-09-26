@@ -1,14 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
-interface IResponseData {
-  message?: string;
-  metadataURL?: string;
-}
 // define handler function
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<IResponseData>
+  res: NextApiResponse
 ) {
   // parse metadata from request body
   const metadata = req.body;
