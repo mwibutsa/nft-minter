@@ -8,8 +8,12 @@ services:
         context: .
         dockerfile: Dockerfile.dev
       volumes:
-        - ./frontend:/app/:rw
-        - ./frontend/node_modules:/app/node_modules/
-        - ./frontend/.next:/app/.next
+        - /app/node_modules/
+        - /app/.next
+        - ./frontend/app:/app/app:rw
+        - ./frontend/components:/app/components:rw
+        - ./frontend/hooks:/app/hooks:rw
+        - ./frontend/pages:/app/pages:rw
+        - ./frontend/public:/app/public:rw
       ports:
         - 3000:3000
