@@ -206,25 +206,29 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
           <div className={styles.input_group}>
             {!txHash && (
               <>
-                <h3 className={styles.input_label}>Token ID</h3>
-                <input
-                  className={styles.input}
-                  value={tokenId}
-                  onChange={(e) => setTokenId(e.target.value)}
-                  type={"text"}
-                  placeholder="Token Id"
-                  disabled={!!txHash || isSubmitting}
-                />
+                <div className={styles.input_group}>
+                  <h3 className={styles.input_label}>Token ID</h3>
+                  <input
+                    className={styles.input}
+                    value={tokenId}
+                    onChange={(e) => setTokenId(e.target.value)}
+                    type={"text"}
+                    placeholder="Token Id"
+                    disabled={!!txHash || isSubmitting}
+                  />
+                </div>
 
-                <h3 className={styles.input_label}>Value</h3>
-                <input
-                  className={styles.input}
-                  value={amount}
-                  onChange={(e) => setAmount(+e.target.value)}
-                  type={"number"}
-                  placeholder="Value"
-                  disabled={!!txHash || isSubmitting}
-                />
+                <div className={styles.input_group}>
+                  <h3 className={styles.input_label}>Editions</h3>
+                  <input
+                    className={styles.input}
+                    value={amount}
+                    onChange={(e) => setAmount(+e.target.value)}
+                    type={"number"}
+                    placeholder="Value"
+                    disabled={!!txHash || isSubmitting}
+                  />
+                </div>
               </>
             )}
           </div>
