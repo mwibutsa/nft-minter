@@ -1,6 +1,9 @@
-import { Alchemy, Network } from "alchemy-sdk";
-import { providers } from "ethers";
 import { type HttpTransport } from "viem";
+import {
+  Web3Provider,
+  JsonRpcProvider,
+  FallbackProvider,
+} from "@ethersproject/providers";
 
 import {
   type WalletClient,
@@ -10,11 +13,6 @@ import {
 } from "wagmi";
 import React from "react";
 
-export const provider = new Alchemy({
-  apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
-  network: process.env.NEXT_PUBLIC_DEFAULT_CHAIN as Network,
-});
-
 export function walletClientToSigner(walletClient: WalletClient) {
   const { account, chain, transport } = walletClient;
   const network = {
@@ -22,7 +20,8 @@ export function walletClientToSigner(walletClient: WalletClient) {
     name: chain.name,
     ensAddress: chain.contracts?.ensRegistry?.address,
   };
-  const provider = new providers.Web3Provider(transport, network);
+
+  const provider = new Web3Provider(transport, network);
   const signer = provider.getSigner(account.address);
   return signer;
 }
@@ -51,10 +50,10 @@ export function publicClientToProvider(publicClient: PublicClient) {
     ensAddress: chain.contracts?.ensRegistry?.address,
   };
   if (transport.type === "fallback")
-    return new providers.FallbackProvider(
+    return new FallbackProvider(
       (transport.transports as ReturnType<HttpTransport>[]).map(
-        ({ value }) => new providers.JsonRpcProvider(value?.url, network)
+        ({ value }) => new JsonRpcProvider(value?.url, network)
       )
     );
-  return new providers.JsonRpcProvider(transport.url, network);
+  return new JsonRpcProvider(transport.url, network);
 }
