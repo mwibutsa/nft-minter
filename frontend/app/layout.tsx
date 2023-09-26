@@ -12,10 +12,10 @@ const config = createConfig(
     walletConnectProjectId: "demo",
 
     // Required
-    appName: "You Create Web3 Dapp",
+    appName: "Mint your own token",
 
     // Optional
-    appDescription: "Your App Description",
+    appDescription: "KOINECT NFT-Minter",
     appUrl: "https://family.co", // your app's url
     appIcon: "https://family.co/logo.png", // your app's logo,no bigger than 1024x1024px (max. 1MB)
     chains: [sepolia, goerli],
