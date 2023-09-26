@@ -25,7 +25,7 @@ WORKDIR /app
 EXPOSE 3000
 COPY frontend .
 
-RUN npm install --legacy-peer-deps
+RUN npm install --legacy-peer-deps --verbose
 RUN npm run build
 
 CMD npm run start
