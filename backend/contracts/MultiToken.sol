@@ -2,38 +2,22 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
-contract MultiToken is
-    ERC1155,
-    AccessControl,
-    Pausable,
-    ERC1155Burnable,
-    ERC1155Supply
-{
-    bytes32 public constant URI_SETTER_ROLE = keccak256("URI_SETTER_ROLE");
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+contract MultiToken is ERC1155, Pausable, ERC1155Burnable, ERC1155Supply {
+    constructor() ERC1155("KOINECT-NFT-MINTER") {}
 
-    constructor() ERC1155("") {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(URI_SETTER_ROLE, msg.sender);
-        _grantRole(PAUSER_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, msg.sender);
-    }
-
-    function setURI(string memory newuri) public onlyRole(URI_SETTER_ROLE) {
+    function setURI(string memory newuri) public {
         _setURI(newuri);
     }
 
-    function pause() public onlyRole(PAUSER_ROLE) {
+    function pause() public {
         _pause();
     }
 
-    function unpause() public onlyRole(PAUSER_ROLE) {
+    function unpause() public {
         _unpause();
     }
 
@@ -42,7 +26,7 @@ contract MultiToken is
         uint256 id,
         uint256 amount,
         bytes memory data
-    ) public onlyRole(MINTER_ROLE) {
+    ) public {
         _mint(account, id, amount, data);
     }
 
@@ -51,7 +35,7 @@ contract MultiToken is
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) public onlyRole(MINTER_ROLE) {
+    ) public {
         _mintBatch(to, ids, amounts, data);
     }
 
@@ -64,13 +48,5 @@ contract MultiToken is
         bytes memory data
     ) internal override(ERC1155, ERC1155Supply) whenNotPaused {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
-    }
-
-    // The following functions are overrides required by Solidity.
-
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(ERC1155, AccessControl) returns (bool) {
-        return super.supportsInterface(interfaceId);
     }
 }

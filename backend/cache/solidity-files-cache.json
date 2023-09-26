@@ -632,8 +632,8 @@
       ]
     },
     "/Users/mwibutsafloribert/Desktop/KOIN/nft-minter/backend/contracts/MultiToken.sol": {
-      "lastModificationDate": 1695655685695,
-      "contentHash": "2dad587b7f2ddc8309d202fa89857313",
+      "lastModificationDate": 1695733201637,
+      "contentHash": "5f584f286152e95a8c7981e8cedc1ab6",
       "sourceName": "contracts/MultiToken.sol",
       "solcConfig": {
         "version": "0.8.19",
@@ -660,7 +660,7 @@
       },
       "imports": [
         "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
-        "@openzeppelin/contracts/access/AccessControl.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
         "@openzeppelin/contracts/security/Pausable.sol",
         "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol",
         "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol"
@@ -1259,6 +1259,43 @@
       ],
       "artifacts": [
         "IERC1155MetadataURI"
+      ]
+    },
+    "/Users/mwibutsafloribert/Desktop/KOIN/nft-minter/backend/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
+      "lastModificationDate": 1695655816760,
+      "contentHash": "5a20b2cad87ddb61c7a3a6af21289e28",
+      "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/Context.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Ownable"
       ]
     }
   }
