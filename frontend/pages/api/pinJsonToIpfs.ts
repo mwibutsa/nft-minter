@@ -1,14 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
+interface IResponseData {
+  message?: string;
+  metadataURL?: string;
+}
 // define handler function
-export default async function handler(req: NextRequest, res: NextResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<IResponseData>
+) {
   // parse metadata from request body
   const metadata = req.body;
 
   // check that method is POST
   if (req.method !== "POST") {
-    res.status(405).send({ message: "Only POST requests allowed" });
+    res.status(405);
+    res.json({ message: "Only POST requests allowed" });
     return;
   }
 
@@ -32,12 +40,12 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     if (cid) {
       res
         .status(200)
-        .send({ metadataURL: `https://gateway.pinata.cloud/ipfs/${cid}` });
+        .json({ metadataURL: `https://gateway.pinata.cloud/ipfs/${cid}` });
     }
   } catch (e) {
     // handle errors
     console.warn(e);
-    res.status(500).send({
+    res.status(500).json({
       message: "something went wrong, check the log in your terminal",
     });
   }
