@@ -23,9 +23,9 @@ RUN pip3 install --no-cache --upgrade pip setuptools
 WORKDIR /app
 
 EXPOSE 3000
-COPY frontend .
+ADD frontend .
 
-RUN npm install --legacy-peer-deps
+RUN npm install --legacy-peer-deps --verbose
 RUN npm run build
 
 CMD npm run start
