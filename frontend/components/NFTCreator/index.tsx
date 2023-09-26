@@ -4,7 +4,7 @@ import { Contract } from "alchemy-sdk";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useAccount } from "wagmi";
-import { useSigner } from "@/hooks/useEthers";
+import { useEthersSigner } from "@/hooks/useEthers";
 import axios from "axios";
 import { ConnectKitButton } from "connectkit";
 type NftCreatorProps = {
@@ -13,14 +13,14 @@ type NftCreatorProps = {
 };
 
 type NFTAttribute = {
-  trait_type: "";
-  value: "";
+  trait_type: string;
+  value: string;
 };
 // React component for NFT creator form
 const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
   // Hooks for handling form input and submission
   const { address, isDisconnected } = useAccount();
-  const signer = useSigner();
+  const signer = useEthersSigner();
   const [txHash, setTxHash] = useState<string>("");
   const [imageURL, setImageURL] = useState<string>("");
   const [imageFile, setImageFile] = useState();
@@ -74,7 +74,11 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
     setNFTAttributes(attributes);
   };
 
-  const updateAttribute = (parameter: string, value: string, index: number) => {
+  const updateAttribute = (
+    parameter: keyof NFTAttribute,
+    value: string,
+    index: number
+  ) => {
     const attributes: Array<NFTAttribute> = [...NFTAttributes];
     attributes[index][parameter] = value;
     setNFTAttributes(attributes);
@@ -100,7 +104,7 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
       await mintTx.wait();
       setTxHash("");
     } catch (e) {
-      alert(e.message);
+      alert((e as Error).message);
       return;
     } finally {
       setIsSubmitting(false);
@@ -127,8 +131,6 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
         name: NFTName,
         attributes: NFTAttributes,
       };
-
-      console.log("metadata", metadata);
 
       // Send a POST request to the api/pinJsonToIpfs.js to store the NFT metadata on IPFS
       const {
@@ -240,7 +242,7 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
                         </h3>
                         <input
                           className={styles.attribute_input}
-                          value={attribute.traitType}
+                          value={attribute.trait_type}
                           placeholder={"Background"}
                           onChange={(e) =>
                             updateAttribute("trait_type", e.target.value, index)
