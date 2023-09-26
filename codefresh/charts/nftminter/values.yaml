@@ -1,0 +1,43 @@
+replicaCount: 1
+
+image:
+imagePullPolicy: Always
+deployEnv:
+
+containerPort: 3000
+servicePort: 3000
+serviceType: ClusterIP
+#serviceType: NodePort
+containerProtocol: TCP
+livenessProbePort: 3000
+redinessProbePort: 3000
+
+ingress:
+  enabled: true
+  hosts:
+    hostname:
+    hostname2:
+    servicePort: 3000
+  class: nginx
+
+  tls:
+    #secretName: letsencrypt-prod
+
+resources:
+  {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
