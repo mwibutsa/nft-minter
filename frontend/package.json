@@ -10,9 +10,6 @@
   },
   "dependencies": {
     "@ethersproject/providers": "^5.7.2",
-    "@types/node": "20.2.5",
-    "@types/react": "18.2.9",
-    "@types/react-dom": "18.2.4",
     "alchemy-sdk": "^2.10.1",
     "axios": "^1.5.0",
     "connectkit": "^1.4.0",
@@ -35,6 +32,9 @@
   },
   "devDependencies": {
     "@types/form-data": "^2.5.0",
-    "@types/formidable": "^3.4.3"
+    "@types/formidable": "^3.4.3",
+    "@types/node": "20.2.5",
+    "@types/react": "18.2.9",
+    "@types/react-dom": "18.2.4"
   }
 }
