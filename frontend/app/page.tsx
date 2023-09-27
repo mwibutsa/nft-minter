@@ -2,7 +2,7 @@
 import styles from "./page.module.css";
 import "./globals.css";
 import NftCreator from "@/components/NFTCreator";
-import MultiTokens from "@/artifacts/contracts/MultiToken.sol/MultiToken.json";
+import MultiTokens from "@/artifacts/contracts/KOINECTMarketplace.sol/KOINECTMarketplace.json";
 
 export default function Home() {
   return (

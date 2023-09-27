@@ -6,8 +6,15 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
-contract MultiToken is ERC1155, Pausable, ERC1155Burnable, ERC1155Supply {
-    constructor() ERC1155("KOINECT-NFT-MINTER") {}
+contract KOINECTMarketplace is
+    ERC1155,
+    Pausable,
+    ERC1155Burnable,
+    ERC1155Supply
+{
+    string public name = "Koinect Marketplace";
+
+    constructor() ERC1155("") {}
 
     function setURI(string memory newuri) public {
         _setURI(newuri);
@@ -48,5 +55,11 @@ contract MultiToken is ERC1155, Pausable, ERC1155Burnable, ERC1155Supply {
         bytes memory data
     ) internal override(ERC1155, ERC1155Supply) whenNotPaused {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+    }
+
+    function contractURI() public pure returns (string memory) {
+        string
+            memory json = '{"image":"https://knft-marketing.s3.us-east-2.amazonaws.com/images/K+UP+pink+bg+blue.png"}';
+        return string.concat("data:application/json;utf8,", json);
     }
 }
