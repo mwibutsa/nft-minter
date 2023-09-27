@@ -146,202 +146,242 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
 
   return (
     // Main page container
-    <div className={styles.page_flexBox}>
-      <div
-        // Check if transaction hash exists to change styling of container
-        className={
-          !txHash ? styles.page_container : styles.page_container_submitted
-        }
-      >
-        <div className={styles.dropzone_container} {...getRootProps()}>
-          <input {...getInputProps()}></input>
-          {/* Check if an image is uploaded and display it */}
-          {imageURL ? (
+    <>
+      <div className={styles.contract_link}>
+        <a
+          href={`https://${String(
+            process.env.NEXT_PUBLIC_DEFAULT_CHAIN
+          ).replace(
+            "eth-",
+            ""
+          )}.etherscan.io/address/${contractAddress}#readContract`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <div className={styles.address_container}>
             <img
-              alt={"NFT Image"}
-              className={styles.nft_image}
-              src={imageURL}
+              src={
+                "https://static.alchemyapi.io/images/cw3d/Icon%20Large/etherscan-l.svg"
+              }
+              width="20px"
+              height="20px"
             />
-          ) : isDragActive ? (
-            <p className="dropzone-content">Release to drop the files here </p>
-          ) : (
-            // Default dropzone content
             <div>
-              <p className={styles.dropzone_header}>
-                Drop your NFT art here, <br /> or{" "}
-                <span className={styles.dropzone_upload}>upload</span>
+              Contract: {contractAddress.slice(0, 6)}...
+              {contractAddress.slice(6, 10)}
+            </div>
+          </div>
+        </a>
+      </div>
+      <div className={styles.page_flexBox}>
+        <div
+          // Check if transaction hash exists to change styling of container
+          className={
+            !txHash ? styles.page_container : styles.page_container_submitted
+          }
+        >
+          <div className={styles.dropzone_container} {...getRootProps()}>
+            <input {...getInputProps()}></input>
+            {/* Check if an image is uploaded and display it */}
+            {imageURL ? (
+              <img
+                alt={"NFT Image"}
+                className={styles.nft_image}
+                src={imageURL}
+              />
+            ) : isDragActive ? (
+              <p className="dropzone-content">
+                Release to drop the files here{" "}
               </p>
-              <p className={styles.dropzone_text}>Supports .jpg, .jpeg, .png</p>
-            </div>
-          )}
-        </div>
-        <div className={styles.inputs_container}>
-          {/* Input field for NFT name */}
-          <div className={styles.input_group}>
-            <h3 className={styles.input_label}>NAME OF NFT</h3>
-            {!txHash ? (
-              <input
-                className={styles.input}
-                value={NFTName}
-                onChange={(e) => setNFTName(e.target.value)}
-                type={"text"}
-                placeholder="NFT Title"
-              />
             ) : (
-              <p>{NFTName}</p>
-            )}
-          </div>
-          {/* Input field for NFT description */}
-          <div className={styles.input_group}>
-            <h3 className={styles.input_label}>DESCRIPTION</h3>
-            {!txHash ? (
-              <input
-                className={styles.input}
-                onChange={(e) => setNFTDescription(e.target.value)}
-                value={NFTDescription}
-                placeholder="NFT Description"
-              />
-            ) : (
-              <p>{NFTDescription}</p>
-            )}
-          </div>
-          <div className={styles.input_group}>
-            {!txHash && (
-              <>
-                <div className={styles.input_group}>
-                  <h3 className={styles.input_label}>Token ID</h3>
-                  <input
-                    className={styles.input}
-                    value={tokenId}
-                    onChange={(e) => setTokenId(e.target.value)}
-                    type={"text"}
-                    placeholder="Token Id"
-                    disabled={!!txHash || isSubmitting}
-                  />
-                </div>
-
-                <div className={styles.input_group}>
-                  <h3 className={styles.input_label}>Editions</h3>
-                  <input
-                    className={styles.input}
-                    value={amount}
-                    onChange={(e) => setAmount(+e.target.value)}
-                    type={"number"}
-                    placeholder="Value"
-                    disabled={!!txHash || isSubmitting}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-          {/* Dynamic attribute input fields */}
-          <>
-            {NFTAttributes &&
-              NFTAttributes.map((attribute, index) => {
-                return (
-                  <div key={index} className={styles.attributes_container}>
-                    <div className={styles.attributes_input_container}>
-                      <div className={styles.attribute_input_group}>
-                        {/* Input field for attribute name */}
-                        <h3 className={styles.attribute_input_label}>
-                          ATTRIBUTE NAME
-                        </h3>
-                        <input
-                          className={styles.attribute_input}
-                          value={attribute.trait_type}
-                          placeholder={"Background"}
-                          onChange={(e) =>
-                            updateAttribute("trait_type", e.target.value, index)
-                          }
-                        ></input>
-                      </div>
-                      <div className={styles.attribute_input_group}>
-                        {/* Input field for attribute value */}
-                        <h3 className={styles.attribute_input_label}>
-                          ATTRIBUTE VALUE
-                        </h3>
-                        <input
-                          className={styles.attribute_input}
-                          value={attribute.value}
-                          placeholder={"White"}
-                          onChange={(e) =>
-                            updateAttribute("value", e.target.value, index)
-                          }
-                        ></input>
-                      </div>
-                      {/* Subtract attribute button */}
-                      {!txHash ? (
-                        <div className={styles.subtract_button_container}>
-                          <img
-                            onClick={() => subtractAttribute(index)}
-                            className={styles.minus_circle}
-                            src="https://static.alchemyapi.io/images/cw3d/Icon%20Dark/Small/minus-circle-contained-s.svg"
-                            alt=""
-                          />
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                );
-              })}
-          </>
-
-          {!txHash ? (
-            <div className={styles.button_container}>
-              <div className={styles.button} onClick={() => addAttribute()}>
-                Add attribute
+              // Default dropzone content
+              <div>
+                <p className={styles.dropzone_header}>
+                  Drop your NFT art here, <br /> or{" "}
+                  <span className={styles.dropzone_upload}>upload</span>
+                </p>
+                <p className={styles.dropzone_text}>
+                  Supports .jpg, .jpeg, .png
+                </p>
               </div>
-            </div>
-          ) : null}
+            )}
+          </div>
           <div>
-            {isDisconnected ? (
-              <ConnectKitButton />
-            ) : !txHash ? (
-              <div>
-                <button
-                  className={
-                    isSubmitting
-                      ? styles.submit_button_submitting
-                      : styles.submit_button
-                  }
-                  disabled={isSubmitting}
-                  onClick={async () => await mintNFT()}
-                >
-                  {isSubmitting ? "Minting NFT" : "Mint NFT"}
-                </button>
-                {error ? (
-                  <p className={styles.error}>One or more fields is blank</p>
-                ) : null}
+            <div className={styles.inputs_container}>
+              {/* Input field for NFT name */}
+              <div className={styles.input_group}>
+                <h3 className={styles.input_label}>NAME OF NFT</h3>
+                {!txHash ? (
+                  <input
+                    className={styles.input}
+                    value={NFTName}
+                    onChange={(e) => setNFTName(e.target.value)}
+                    type={"text"}
+                    placeholder="NFT Title"
+                  />
+                ) : (
+                  <p>{NFTName}</p>
+                )}
               </div>
-            ) : (
-              <div>
-                <h3 className={styles.attribute_input_label}>ADDRESS</h3>
-                <a
-                  href={`https://${String(
-                    process.env.NEXT_PUBLIC_DEFAULT_CHAIN
-                  ).replace("eth-", "")}.etherscan.io/tx/${txHash}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <div className={styles.address_container}>
-                    <div>
-                      {txHash.slice(0, 6)}...{txHash.slice(6, 10)}
+              {/* Input field for NFT description */}
+              <div className={styles.input_group}>
+                <h3 className={styles.input_label}>DESCRIPTION</h3>
+                {!txHash ? (
+                  <input
+                    className={styles.input}
+                    onChange={(e) => setNFTDescription(e.target.value)}
+                    value={NFTDescription}
+                    placeholder="NFT Description"
+                  />
+                ) : (
+                  <p>{NFTDescription}</p>
+                )}
+              </div>
+              <div className={styles.input_group}>
+                {!txHash && (
+                  <>
+                    <div className={styles.input_group}>
+                      <h3 className={styles.input_label}>Token ID</h3>
+                      <input
+                        className={styles.input}
+                        value={tokenId}
+                        onChange={(e) => setTokenId(e.target.value)}
+                        type={"text"}
+                        placeholder="Token Id"
+                        disabled={!!txHash || isSubmitting}
+                      />
                     </div>
-                    <img
-                      src={
-                        "https://static.alchemyapi.io/images/cw3d/Icon%20Large/etherscan-l.svg"
-                      }
-                      width="20px"
-                      height="20px"
-                    />
-                  </div>
-                </a>
+
+                    <div className={styles.input_group}>
+                      <h3 className={styles.input_label}>Editions</h3>
+                      <input
+                        className={styles.input}
+                        value={amount}
+                        onChange={(e) => setAmount(+e.target.value)}
+                        type={"number"}
+                        placeholder="Value"
+                        disabled={!!txHash || isSubmitting}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
-            )}
+              {/* Dynamic attribute input fields */}
+              <>
+                {NFTAttributes &&
+                  NFTAttributes.map((attribute, index) => {
+                    return (
+                      <div key={index} className={styles.attributes_container}>
+                        <div className={styles.attributes_input_container}>
+                          <div className={styles.attribute_input_group}>
+                            {/* Input field for attribute name */}
+                            <h3 className={styles.attribute_input_label}>
+                              ATTRIBUTE NAME
+                            </h3>
+                            <input
+                              className={styles.attribute_input}
+                              value={attribute.trait_type}
+                              placeholder={"Background"}
+                              onChange={(e) =>
+                                updateAttribute(
+                                  "trait_type",
+                                  e.target.value,
+                                  index
+                                )
+                              }
+                            ></input>
+                          </div>
+                          <div className={styles.attribute_input_group}>
+                            {/* Input field for attribute value */}
+                            <h3 className={styles.attribute_input_label}>
+                              ATTRIBUTE VALUE
+                            </h3>
+                            <input
+                              className={styles.attribute_input}
+                              value={attribute.value}
+                              placeholder={"White"}
+                              onChange={(e) =>
+                                updateAttribute("value", e.target.value, index)
+                              }
+                            ></input>
+                          </div>
+                          {/* Subtract attribute button */}
+                          {!txHash ? (
+                            <div className={styles.subtract_button_container}>
+                              <img
+                                onClick={() => subtractAttribute(index)}
+                                className={styles.minus_circle}
+                                src="https://static.alchemyapi.io/images/cw3d/Icon%20Dark/Small/minus-circle-contained-s.svg"
+                                alt=""
+                              />
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </>
+
+              {!txHash ? (
+                <div className={styles.button_container}>
+                  <div className={styles.button} onClick={() => addAttribute()}>
+                    Add attribute
+                  </div>
+                </div>
+              ) : null}
+              <div>
+                {isDisconnected ? (
+                  <ConnectKitButton />
+                ) : !txHash ? (
+                  <div>
+                    <button
+                      className={
+                        isSubmitting
+                          ? styles.submit_button_submitting
+                          : styles.submit_button
+                      }
+                      disabled={isSubmitting}
+                      onClick={async () => await mintNFT()}
+                    >
+                      {isSubmitting ? "Minting NFT" : "Mint NFT"}
+                    </button>
+                    {error ? (
+                      <p className={styles.error}>
+                        One or more fields is blank
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div>
+                    <h3 className={styles.attribute_input_label}>ADDRESS</h3>
+                    <a
+                      href={`https://${String(
+                        process.env.NEXT_PUBLIC_DEFAULT_CHAIN
+                      ).replace("eth-", "")}.etherscan.io/tx/${txHash}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <div className={styles.address_container}>
+                        <div>
+                          {txHash.slice(0, 6)}...{txHash.slice(6, 10)}
+                        </div>
+                        <img
+                          src={
+                            "https://static.alchemyapi.io/images/cw3d/Icon%20Large/etherscan-l.svg"
+                          }
+                          width="20px"
+                          height="20px"
+                        />
+                      </div>
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
