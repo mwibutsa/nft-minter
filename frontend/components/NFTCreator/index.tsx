@@ -102,7 +102,9 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
       await NFTContract.setURI(metadataURL);
       setTxHash(mintTx.hash);
       await mintTx.wait();
-      setTxHash("");
+      setTimeout(() => {
+        setTxHash("");
+      }, 10000);
     } catch (e) {
       alert((e as Error).message);
       return;
