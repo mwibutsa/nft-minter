@@ -2,6 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 
 module.exports = {
+  defaultNetwork: "ETH_SEPOLIA",
   solidity: {
     version: "0.8.19",
     settings: {
