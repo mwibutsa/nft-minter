@@ -1,6 +1,7 @@
 "use client";
 import styles from "./page.module.css";
 import "./globals.css";
+import "@radix-ui/themes/styles.css";
 import NftCreator from "@/components/NFTCreator";
 import KOINECTMarketplace from "@/artifacts/contracts/KOINECTMarketplace.sol/KOINECTMarketplace.json";
 

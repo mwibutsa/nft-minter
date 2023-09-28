@@ -10,20 +10,13 @@ import {
   polygon,
   polygonMumbai,
 } from "@wagmi/core/chains";
+import { Theme } from "@radix-ui/themes";
 
 const config = createConfig(
   getDefaultConfig({
-    // Required API Keys
-    alchemyId: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY, // or infuraId
+    alchemyId: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
     walletConnectProjectId: "demo",
-
-    // Required
-    appName: "Mint your own token",
-
-    // Optional
-    appDescription: "KOINECT NFT Minter",
-    appUrl: "https://family.co", // your app's url
-    appIcon: "https://family.co/logo.png", // your app's logo,no bigger than 1024x1024px (max. 1MB)
+    appName: "Koinect NFT Minter",
     chains: [sepolia, goerli, mainnet, polygon, polygonMumbai],
   })
 );
@@ -41,17 +34,19 @@ export default function RootLayout({
       <WagmiConfig config={config}>
         <ConnectKitProvider mode="dark">
           <body>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                minHeight: "105vh",
-              }}
-            >
-              <Navbar />
-              <div style={{ flexGrow: 1 }}>{children}</div>
-              <Footer />
-            </div>
+            <Theme>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  minHeight: "105vh",
+                }}
+              >
+                <Navbar />
+                <div style={{ flexGrow: 1 }}>{children}</div>
+                <Footer />
+              </div>
+            </Theme>
           </body>
         </ConnectKitProvider>
       </WagmiConfig>
