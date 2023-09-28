@@ -1,4 +1,5 @@
 import { Card, Flex, Box, Text } from "@radix-ui/themes";
+import { useAccount } from "wagmi";
 
 type UserTokenProps = {
   data: Array<any>;
@@ -6,6 +7,16 @@ type UserTokenProps = {
 };
 
 const UserTokens: React.FC<UserTokenProps> = ({ data, isLoading = false }) => {
+  const account = useAccount();
+
+  if (!account.isConnected) {
+    return "Your wallet is not connected.";
+  }
+
+  if (!isLoading && data.length === 0) {
+    return "Use the form below to mint some tokens";
+  }
+
   return (
     <div className="user-tokens">
       {isLoading && data.length < 0
