@@ -1,37 +1,151 @@
-@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,500;1,400&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,500;1,400&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "@radix-ui/colors/black-alpha.css";
+@import "@radix-ui/colors/mauve.css";
+@import "@radix-ui/colors/violet.css";
+
+@layer components {
+  .koin-h1,
+  .koin-h2,
+  .koin-h3,
+  .koin-h4,
+  .koin-h5,
+  .koin-h6 {
+    @apply dark:text-white;
+  }
+  .koin-body,
+  .koin-subtitle,
+  .koin-label-s,
+  .btn-primary-outline {
+    @apply dark:text-white;
+  }
+}
+
+/* FONTS */
+.koin-h1 {
+  font-weight: 600;
+  font-size: 3rem;
+}
+.koin-h2 {
+  font-weight: 600;
+  font-size: 2.5rem;
+}
+.koin-h3 {
+  font-weight: 600;
+  font-size: 2rem;
+}
+.koin-h4 {
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+.koin-h5 {
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+.koin-h6 {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.koin-subtitle {
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+.koin-subtitle-big {
+  font-weight: 700;
+  font-size: 1rem;
+}
+.koin-subtitle-small {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.koin-body {
+  font-weight: 300;
+  font-size: 1rem;
+}
+.koin-body-2 {
+  font-weight: 300;
+  font-size: 0.875rem;
+}
+
+.koin-capitalized {
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+.koin-small {
+  font-weight: 300;
+  font-size: 0.75rem;
+}
+.koin-tiny {
+  font-weight: 500;
+  font-size: 0.625rem;
+}
+
+.koin-label-s {
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+.koin-label-m {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+.koin-label-l {
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+/* ITEMS */
+.koin-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: transparent;
+  transition-property: all;
+  transition-duration: 0.2s;
+  padding: 12px 16px;
+  user-select: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.koin-dropdown-item:disabled {
+  cursor: not-allowed;
+}
 
 html,
 body {
-	font-family: 'Rubik';
-	font-weight: normal;
+  font-family: "Rubik";
+  font-weight: normal;
 }
-h1{
-	margin-bottom: 1rem;
+h1 {
+  margin-bottom: 1rem;
 }
-h2{
-	margin-bottom: .5rem;
-	font-weight: normal;
-
+h2 {
+  margin-bottom: 0.5rem;
+  font-weight: normal;
 }
 
-p{
-	line-height: 1.5rem;
-	font-weight: lighter;
-
+p {
+  line-height: 1.5rem;
+  font-weight: lighter;
 }
 
 a {
-	color: inherit;
-	text-decoration: none;
+  color: inherit;
+  text-decoration: none;
 }
 
 * {
-	box-sizing: border-box;
-	padding: 0;
-	margin: 0;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 @media (prefers-color-scheme: dark) {
-	html {
-	}
+  html {
+  }
 }

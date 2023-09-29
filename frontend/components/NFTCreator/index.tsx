@@ -7,6 +7,10 @@ import { useAccount } from "wagmi";
 import { useEthersSigner } from "@/hooks/useEthers";
 import axios from "axios";
 import { ConnectKitButton } from "connectkit";
+import * as Accordion from "@radix-ui/react-accordion";
+import UserTokens from "../UserTokens";
+import { StyledChevron, StyledContent } from "../radix/Accordion";
+import { useGetUserTokens } from "@/hooks/useAlchemy";
 type NftCreatorProps = {
   contractAddress: string;
   abi: Array<any>;
@@ -29,6 +33,7 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
   const [NFTAttributes, setNFTAttributes] = useState<Array<NFTAttribute>>([
     { trait_type: "", value: "" },
   ]);
+  const { data, fetchTokens, isLoading } = useGetUserTokens();
   const [amount, setAmount] = useState(1);
   const [tokenId, setTokenId] = useState<string | number>(1);
 
@@ -83,6 +88,16 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
     attributes[index][parameter] = value;
     setNFTAttributes(attributes);
   };
+  const clearForm = () => {
+    setTxHash("");
+    setAmount(0);
+    setNFTName("");
+    setNFTDescription("");
+    setImageFile(undefined);
+    setTokenId("");
+    setImageURL("");
+  };
+  // clearForm();
 
   // Function for minting the NFT and generating metadata
   const mintNFT = async () => {
@@ -102,9 +117,8 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
       await NFTContract.setURI(metadataURL);
       setTxHash(mintTx.hash);
       await mintTx.wait();
-      setTimeout(() => {
-        setTxHash("");
-      }, 10000);
+      await fetchTokens();
+      clearForm();
     } catch (e) {
       alert((e as Error).message);
       return;
@@ -146,33 +160,74 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
 
   return (
     // Main page container
-    <>
-      <div className={styles.contract_link}>
-        <a
-          href={`https://${String(
-            process.env.NEXT_PUBLIC_DEFAULT_CHAIN
-          ).replace(
-            "eth-",
-            ""
-          )}.etherscan.io/address/${contractAddress}#readContract`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <div className={styles.address_container}>
-            <img
-              src={
-                "https://static.alchemyapi.io/images/cw3d/Icon%20Large/etherscan-l.svg"
-              }
-              width="20px"
-              height="20px"
-            />
-            <div>
-              Contract: {contractAddress.slice(0, 6)}...
-              {contractAddress.slice(6, 10)}
+    <div>
+      <Accordion.Root
+        className="max-w-[900px] ml-auto mr-auto  col-span-full rounded-2xl border-[1px] mb-[20px]  border-gray-200 bg-white dark:border-slate-300 dark:bg-dark-900"
+        type="single"
+        defaultValue="contract-info"
+        collapsible
+      >
+        <Accordion.Item value="contract-info">
+          <Accordion.Header className="overflow-hidden bg-neutral-100 data-[state=closed]:rounded-2xl data-[state=open]:rounded-t-2xl dark:bg-koinDark-700">
+            <Accordion.Trigger className="koin-h5 flex w-full items-center justify-between p-6 dark:text-white">
+              <div className="flex text-black flex-row items-center gap-2">
+                Contract Info
+              </div>
+              <StyledChevron className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+            </Accordion.Trigger>
+          </Accordion.Header>
+          <StyledContent>
+            <div className={styles.contract_link}>
+              <a
+                href={`https://${String(
+                  process.env.NEXT_PUBLIC_DEFAULT_CHAIN
+                ).replace(
+                  "eth-",
+                  ""
+                )}.etherscan.io/address/${contractAddress}#readContract`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <div className={styles.address_container}>
+                  <img
+                    src={
+                      "https://static.alchemyapi.io/images/cw3d/Icon%20Large/etherscan-l.svg"
+                    }
+                    width="20px"
+                    height="20px"
+                  />
+                  <div>
+                    Contract: {contractAddress.slice(0, 6)}...
+                    {contractAddress.slice(6, 10)}
+                  </div>
+                </div>
+              </a>
             </div>
-          </div>
-        </a>
-      </div>
+          </StyledContent>
+        </Accordion.Item>
+      </Accordion.Root>
+
+      <Accordion.Root
+        className="max-w-[900px] ml-auto mr-auto  col-span-full rounded-2xl border-[1px] mb-[20px] border-gray-200 bg-white dark:border-slate-300 dark:bg-dark-900"
+        type="single"
+        collapsible
+        defaultChecked
+      >
+        <Accordion.Item className="AccordionItem" value="user-tokens">
+          <Accordion.Header className="overflow-hidden bg-neutral-100 data-[state=closed]:rounded-2xl data-[state=open]:rounded-t-2xl dark:bg-koinDark-700">
+            <Accordion.Trigger className="koin-h5 flex w-full items-center justify-between p-6 dark:text-white">
+              <div className="flex text-black flex-row items-center gap-2">
+                User Tokens
+              </div>
+              <StyledChevron className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+            </Accordion.Trigger>
+          </Accordion.Header>
+
+          <StyledContent>
+            <UserTokens data={data} isLoading={isLoading} />
+          </StyledContent>
+        </Accordion.Item>
+      </Accordion.Root>
       <div className={styles.page_flexBox}>
         <div
           // Check if transaction hash exists to change styling of container
@@ -381,7 +436,7 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
