@@ -96,6 +96,7 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
     setImageFile(undefined);
     setTokenId("");
     setImageURL("");
+    setNFTAttributes([{ trait_type: "", value: "" }]);
   };
   // clearForm();
 
@@ -160,9 +161,9 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
 
   return (
     // Main page container
-    <div>
+    <div className="md:mx-4">
       <Accordion.Root
-        className="max-w-[900px] ml-auto mr-auto  col-span-full rounded-2xl border-[1px] mb-[20px]  border-gray-200 bg-white dark:border-slate-300 dark:bg-dark-900"
+        className="md:max-w-[900px]  max-w-[92%] ml-auto  mr-auto  col-span-full rounded-2xl border-[1px] mb-[20px]  border-gray-200 bg-white dark:border-slate-300 dark:bg-dark-900"
         type="single"
         defaultValue="contract-info"
         collapsible
@@ -208,7 +209,7 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
       </Accordion.Root>
 
       <Accordion.Root
-        className="max-w-[900px] ml-auto mr-auto  col-span-full rounded-2xl border-[1px] mb-[20px] border-gray-200 bg-white dark:border-slate-300 dark:bg-dark-900"
+        className="md:max-w-[900px]  max-w-[92%] ml-auto mr-auto  col-span-full rounded-2xl border-[1px] mb-[20px] border-gray-200 bg-white dark:border-slate-300 dark:bg-dark-900"
         type="single"
         collapsible
         defaultChecked
