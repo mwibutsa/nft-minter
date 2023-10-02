@@ -3,7 +3,7 @@ import styles from "./NftCreator.module.css";
 import { Contract } from "alchemy-sdk";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { useAccount } from "wagmi";
+import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import { useEthersSigner } from "@/hooks/useEthers";
 import axios from "axios";
 import { ConnectKitButton } from "connectkit";
@@ -22,6 +22,9 @@ type NFTAttribute = {
 };
 // React component for NFT creator form
 const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
+  const { chain } = useNetwork();
+
+  console.log("chain", chain?.name);
   // Hooks for handling form input and submission
   const { address, isDisconnected } = useAccount();
   const signer = useEthersSigner();
@@ -36,7 +39,9 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
   const { data, fetchTokens, isLoading } = useGetUserTokens();
   const [amount, setAmount] = useState(1);
   const [tokenId, setTokenId] = useState<string | number>(1);
-
+  const { switchNetwork, isLoading: isSwitchingNetwork } = useSwitchNetwork({
+    chainId: parseInt(String(process.env.NEXT_PUBLIC_CHAIN_ID), 10),
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(false);
 
@@ -105,6 +110,10 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
     if (formNotFilled()) {
       setError(true);
       return;
+    }
+
+    if (String(chain?.id) !== String(process.env.NEXT_PUBLIC_CHAIN_ID)) {
+      switchNetwork?.();
     }
 
     setError(false);
@@ -399,7 +408,11 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
                       disabled={isSubmitting}
                       onClick={async () => await mintNFT()}
                     >
-                      {isSubmitting ? "Minting NFT" : "Mint NFT"}
+                      {isSwitchingNetwork
+                        ? "Switching Network"
+                        : isSubmitting
+                        ? "Minting NFT"
+                        : "Mint NFT"}
                     </button>
                     {error ? (
                       <p className={styles.error}>
