@@ -3,13 +3,7 @@ import { WagmiConfig, createConfig } from "wagmi";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import Navbar from "@/components/instructionsComponent/navigation/navbar";
 import Footer from "@/components/instructionsComponent/navigation/footer";
-import {
-  sepolia,
-  goerli,
-  mainnet,
-  polygon,
-  polygonMumbai,
-} from "@wagmi/core/chains";
+import { sepolia } from "@wagmi/core/chains";
 import { Theme } from "@radix-ui/themes";
 
 const config = createConfig(
@@ -17,7 +11,7 @@ const config = createConfig(
     alchemyId: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
     walletConnectProjectId: "demo",
     appName: "Koinect NFT Minter",
-    chains: [sepolia, goerli, mainnet, polygon, polygonMumbai],
+    chains: [sepolia],
   })
 );
 
