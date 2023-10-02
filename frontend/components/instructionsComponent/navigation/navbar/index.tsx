@@ -16,7 +16,7 @@ export default function Navbar() {
           <p>Koinect NFT Minter</p>
         </a>
       </div>
-      <ConnectKitButton />
+      <ConnectKitButton showBalance />
     </nav>
   );
 }

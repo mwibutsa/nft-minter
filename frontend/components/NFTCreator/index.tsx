@@ -1,12 +1,12 @@
 // Import necessary modules and styles
 import styles from "./NftCreator.module.css";
 import { Contract } from "alchemy-sdk";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import { useEthersSigner } from "@/hooks/useEthers";
 import axios from "axios";
-import { ConnectKitButton } from "connectkit";
+import { ConnectKitButton, useModal } from "connectkit";
 import * as Accordion from "@radix-ui/react-accordion";
 import UserTokens from "../UserTokens";
 import { StyledChevron, StyledContent } from "../radix/Accordion";
@@ -27,6 +27,14 @@ const NftCreator: React.FC<NftCreatorProps> = ({ contractAddress, abi }) => {
   console.log("chain", chain?.name);
   // Hooks for handling form input and submission
   const { address, isDisconnected } = useAccount();
+  const { setOpen } = useModal();
+
+  useEffect(() => {
+    if (String(process.env.NEXT_PUBLIC_CHAIN_ID) === String(chain?.id)) {
+      setOpen(false);
+    }
+  }, [chain?.id]);
+
   const signer = useEthersSigner();
   const [txHash, setTxHash] = useState<string>("");
   const [imageURL, setImageURL] = useState<string>("");
